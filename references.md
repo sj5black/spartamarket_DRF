@@ -1,5 +1,9 @@
 
-<!-- ! + TAB 시 html 기본포맷 자동완성 -->
+TIP
+```
+html 에서 ! + TAB 시 html 기본포맷 자동완성
+포맷터 설정 후 Alt+Shift+F 시 자동 포맷팅 (딕셔너리 정렬)
+```
 
 ```bash
 <Django 공식 문서> https://docs.djangoproject.com/en/4.2/
@@ -11,6 +15,7 @@ pip install django==4.2
 
 <DRF 관련>
 pip install django-seed # settings.py의 INSTALLED_APPS에 추가 ("django_seed",)
+python manage.py seed <앱이름> --number=20
 pip install psycopg2
 pip install djangorestframework # settings.py의 INSTALLED_APPS에 추가 ("rest_framework",)
 pip freeze > requirements.txt
@@ -208,4 +213,88 @@ Django에서 쿼리셋이 실행하는 SQL을 보려면 다음과 같은 방법�
 from django.db import connection
 articles = Article.objects.all()
 print(articles.query)  # SELECT "app_article"."id", "app_article"."title", ...
+```
+
+OS 변경 시 주의사항
+제어판 - 프로그램 - Windows기능 켜기/끄기 - Linux용 Windows 하위 시스템
+
+```
+재시작 시 Windows OS 관련 일부설정이 초기화되면서
+ PowerShell 접근권한이 Retriced(default값)으로 변경된다.
+ 이를 다시 수정가능으로 변경해줘야 한다
+
+해결방법 :
+1. Get-ExecutionPolicy
+2. Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+3. Y
+```
+
+view 처리방식 (HTTP, Json, DRF)
+```
+def json_01(request):
+    articles = Article.objects.all()
+    json_res = []
+
+    for article in articles:
+        json_res.append(
+            {
+                "title": article.title,
+                "content": article.content,
+                "created_at": article.created_at,
+                "updated_at": article.updated_at,
+            }
+        )
+    return JsonResponse(json_res, safe=False)
+
+def json_02(request):
+    articles = Article.objects.all()
+    res_data = serializers.serialize("json", articles)
+    return HttpResponse(res_data, content_type="application/json")
+
+@api_view(["GET"])
+def json_drf(request):
+    articles = Article.objects.all()
+    serializer = ArticleSerializer(articles, many=True)
+    return Response(serializer.data)
+```
+
+DRF
+```
+FrontEnd : 클라이언트의 페이지 이동, 서버에 대한 요청을 처리
+BackEnd : 요청된 값을 적절한 로직을 통해 serializer값과 HTTP 상태코드 반환
+
+실제 클라이언트 웹에서 보여지는 구조.
+1. 현재 클라이언트 URL
+2. API의 urls.py에 선언되어있는 URL로 요청만 전송 (실제 클라 웹페이지는 변경 X)
+3. API의 응답(상태코드) 확인 후 JS나 React 등에서 Redirect 된 다른 URL로 이동
+```
+
+역참조
+```py
+Django에서는 모델 클래스의 메타정보를 담고 있는 _meta 객체를 사용하여 모든 역참조 필드를 확인할 수 있습니다.
+
+# Article 클래스의 역참조 필드들을 출력하는 함수
+def get_reverse_related_fields(model):
+    for field in model._meta.get_fields():
+        if field.is_relation and field.auto_created and not field.concrete:
+            print(f"역참조 필드 이름: {field.name}")
+            print(f"참조하는 모델: {field.related_model.__name__}")
+```
+
+SerializerMethodField
+```py
+"""
+MethodField로 정의된 변수명을 a라 하면,
+get_a 함수를 생성해서 반환값으로 a에 설정
+"""
+
+class UserSerializer(serializers.ModelSerializer):
+    days_since_joined = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def get_days_since_joined(self, obj):
+        return (now() - obj.date_joined).days
 ```
