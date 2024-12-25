@@ -7,6 +7,7 @@ html 에서 ! + TAB 시 html 기본포맷 자동완성
 
 ```bash
 <Django 공식 문서> https://docs.djangoproject.com/en/4.2/
+<DRF 공식문서> https://www.django-rest-framework.org/
 <VS Code 단축키> https://demun.github.io/vscode-tutorial/shortcuts/
 
 <터미널 명령어>

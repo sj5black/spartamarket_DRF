@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Article, Comment
-from .serializers import ArticleSerializer, CommentSerializer
+from .serializers import ArticleSerializer, ArticleDetailSerializer, CommentSerializer
 
 # @api_view(["GET", "POST"])
 # def article_list(request):
@@ -58,12 +58,12 @@ class ArticleDetailAPIView(APIView):
 
     def get(self, request, pk):
         article = self.get_object(pk)
-        serializer = ArticleSerializer(article)
+        serializer = ArticleDetailSerializer(article)
         return Response(serializer.data)
 
     def put(self, request, pk):
         article = self.get_object(pk)
-        serializer = ArticleSerializer(article, data=request.data, partial=True)
+        serializer = ArticleDetailSerializer(article, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
@@ -98,7 +98,7 @@ class CommentListAPIView(APIView):
 class CommentDetailAPIView(APIView):
     def get_object(self, comment_pk):
         return get_object_or_404(Comment, pk=comment_pk)
-    
+
     def put(self, request, comment_pk):
         comment = self.get_object(comment_pk)
         serializer = CommentSerializer(comment, data=request.data, partial=True)
