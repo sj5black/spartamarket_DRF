@@ -13,4 +13,6 @@ urlpatterns = [
     path("login/", AuthAPIView.as_view(), name="login"),
     path("logout/", AuthAPIView.as_view(), name="logout"),
     path("password/", PasswordAPIView.as_view(), name="password"),
+    path('<str:username>/follow/', FollowAPIView.as_view(), name='follow_user'),
+    path('<str:username>/unfollow/', UnfollowAPIView.as_view(), name='unfollow_user'),
 ]

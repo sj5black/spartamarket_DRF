@@ -53,5 +53,25 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 	
     # 헬퍼 클래스 사용
     objects = UserManager()
-
     USERNAME_FIELD = "username"
+    
+    # 팔로우 관계 설정 (ManyToMany)
+    followings = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
+    
+    def follow(self, user):
+        """ 다른 유저를 팔로우하는 메서드 """
+        if user != self:
+            self.followings.add(user)
+
+    def unfollow(self, user):
+        """ 팔로우 취소하는 메서드 """
+        if user != self:
+            self.followings.remove(user)
+
+    def is_following(self, user):
+        """ 현재 유저가 다른 유저를 팔로우하고 있는지 확인하는 메서드 """
+        return self.followings.filter(id=user.id).exists()
+
+    def is_followed_by(self, user):
+        """ 다른 유저가 현재 유저를 팔로우하고 있는지 확인하는 메서드 """
+        return self.followers.filter(id=user.id).exists()
