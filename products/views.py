@@ -9,7 +9,6 @@ from .serializers import ArticleSerializer, ArticleDetailSerializer, CommentSeri
 
 
 class ArticleListAPIView(APIView):
-    
     # 목록 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
     def get_permissions(self):
         if self.request.method == 'GET':
