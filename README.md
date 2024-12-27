@@ -29,10 +29,14 @@ Response.__init__() got an unexpected keyword argument 'status')
  - shell_plus 로 ORM이 실행중인 경우
  - 서버가 실행중인 경우
 
-5. 포스트맨에서 POST 등 요청 시에 자동으로 역슬래시 붙히는 기능이 있어서 url 이랑 postman 경로 설정에 역슬래시 모두 삭제 필요
+5. Article 모델에 author_id 필드를 추가하고 자동할당 시, POST 에서는 정상적으로 숫자값이 입력되는데 DB 에는 NULL 로 저장되는 현상
+(원인) Article 모델에 실제로 추가되는 필드는 index가 아닌 User 객체이고, DB에 저장되는 컬럼명은 해당 객체의 id (author_id)를 자동으로 생성하여 저장하는 구조
+(해결) Article 모델에 작성자 정보를 "author" 로 저장해서 해결
 
  ## 코드 리뷰
 
 3. 로그아웃 기능 구현 중 예상되는 문제 (토큰 무효화 방법 사용 시)
 (문제) 유저가 많아지고, 로그인/로그아웃이 반복될 때마다 blacklisted token정보가 DB에 계속 쌓일 가능성  
 (수정) blacklisted token의 DB정보를 refresh 토큰의 유효기간을 고려하여 적절한 주기마다 지속적으로 초기화
+
+5. 포스트맨에서 POST 등 요청 시에 자동으로 역슬래시 붙히는 기능이 있어서 url 이랑 postman 경로 설정에 역슬래시 모두 삭제 필요

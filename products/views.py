@@ -21,9 +21,9 @@ class ArticleListAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = ArticleSerializer(data=request.data)
+        serializer = ArticleSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
