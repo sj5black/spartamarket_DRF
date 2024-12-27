@@ -1,47 +1,20 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Article, Comment
 from .serializers import ArticleSerializer, ArticleDetailSerializer, CommentSerializer
 
-# @api_view(["GET", "POST"])
-# def article_list(request):
-#     if request.method == "GET":
-#         articles = Article.objects.all()
-#         serializer = ArticleSerializer(articles, many=True)
-#         return Response(serializer.data)
-
-#     elif request.method == "POST":
-#         serializer = ArticleSerializer(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-# @api_view(["GET", "PUT", "DELETE"])
-# def article_detail(request, pk):
-#     if request.method == "GET":
-#         article = get_object_or_404(Article, pk=pk)
-#         serializer = ArticleSerializer(article)
-#         return Response(serializer.data)
-
-#     elif request.method == "PUT":
-#         article = get_object_or_404(Article, pk=pk)
-#         serializer = ArticleSerializer(article, data=request.data, partial=True)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data)
-
-#     elif request.method == "DELETE":
-#         article = get_object_or_404(Article, pk=pk)
-#         article.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class ArticleListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    
+    # 목록 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
     
     def get(self, request):
         articles = Article.objects.all()
@@ -56,7 +29,11 @@ class ArticleListAPIView(APIView):
 
 
 class ArticleDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # 목록 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
     
     def get_object(self, pk):
         return get_object_or_404(Article, pk=pk)
@@ -119,3 +96,40 @@ class CommentDetailAPIView(APIView):
         comment = self.get_object(comment_pk)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
+# @api_view(["GET", "POST"])
+# def article_list(request):
+#     if request.method == "GET":
+#         articles = Article.objects.all()
+#         serializer = ArticleSerializer(articles, many=True)
+#         return Response(serializer.data)
+
+#     elif request.method == "POST":
+#         serializer = ArticleSerializer(data=request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# @api_view(["GET", "PUT", "DELETE"])
+# def article_detail(request, pk):
+#     if request.method == "GET":
+#         article = get_object_or_404(Article, pk=pk)
+#         serializer = ArticleSerializer(article)
+#         return Response(serializer.data)
+
+#     elif request.method == "PUT":
+#         article = get_object_or_404(Article, pk=pk)
+#         serializer = ArticleSerializer(article, data=request.data, partial=True)
+#         if serializer.is_valid(raise_exception=True):
+#             serializer.save()
+#             return Response(serializer.data)
+
+#     elif request.method == "DELETE":
+#         article = get_object_or_404(Article, pk=pk)
+#         article.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)

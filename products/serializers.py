@@ -11,12 +11,13 @@ class CommentSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret.pop("article")
         return ret
-    
+
+
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
-        
+
 
 class ArticleDetailSerializer(ArticleSerializer):
     comment_set = CommentSerializer(many=True, read_only=True)
