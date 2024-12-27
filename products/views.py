@@ -1,12 +1,46 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
+from django.db.models import Q
 
+
+# 검색 기능(제목, 내용, 작성자 닉네임)
+class ArticleSearchAPIView(APIView):
+    def get(self, request):
+        # 검색어 가져오기
+        search_query = request.query_params.get('q', None)
+
+        print("\n\n")
+        print(search_query)
+        print("\n\n")
+        # 검색어가 있을 경우 필터링
+        if search_query:
+            articles = Article.objects.filter(
+                Q(title__icontains=search_query) | 
+                Q(content__icontains=search_query) | 
+                Q(author_nickname__icontains=search_query)
+            )
+        else:
+            articles = Article.objects.all()
+        
+        paginator = ArticlePagination()
+        result_page = paginator.paginate_queryset(articles, request)
+        serializer = ArticleSerializer(result_page, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
+
+
+class ArticlePagination(PageNumberPagination):
+    page_size = 20  # 한 페이지에 보여줄 항목 수
+    page_size_query_param = 'page_size'  # 클라이언트가 요청 시 페이지 크기 지정 가능
+    max_page_size = 50  # 최대 페이지 크기
+    
 
 class ArticleListAPIView(APIView):
     # 목록 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
@@ -17,13 +51,19 @@ class ArticleListAPIView(APIView):
     
     def get(self, request):
         articles = Article.objects.all()
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
+        
+        # 페이지네이션 적용
+        paginator = ArticlePagination()
+        result_page = paginator.paginate_queryset(articles, request)
+        serializer = ArticleSerializer(result_page, many=True)
+        
+        # 페이지네이션된 응답 반환
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = ArticleSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
-            serializer.save(author=request.user)
+            serializer.save(author=request.user, author_nickname=request.user.nickname)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -78,7 +118,7 @@ class CommentListAPIView(APIView):
         article = get_object_or_404(Article, pk=article_pk)
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(article=article, author=request.user)
+            serializer.save(article=article, author=request.user, author_nickname=request.user.nickname)
             # serializer.save(article=article)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 

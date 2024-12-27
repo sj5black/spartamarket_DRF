@@ -42,6 +42,9 @@ Response.__init__() got an unexpected keyword argument 'status')
  serializer.save(article=article, author=request.user)
  ```
 
+7. 상품, 댓글 작성자가 CustomUser 모델 형식의 외래키로 연결되어있어 각 게시글에 대한 작성자명(닉네임) 정보 관리가 어려운 문제.
+(수정) 상품과 댓글의 author를 유저모델의 외래키 대신 해당 글을 작성한 유저의 닉네임으로 입력되도록 디커플링하는 방법을 생각했지만, 추후 글 작성자가 개인정보를 수정했을 때, 닉네임만으로는 해당 게시글의 작성자를 특정하기 어려운 이슈가 있어 디커플링 대신 author_nickname 컬럼을 상품,댓글 모델에 추가하는 방식으로 개선
+
  ## 코드 리뷰
 
 3. 로그아웃 기능 구현 중 예상되는 문제 (토큰 무효화 방법 사용 시)

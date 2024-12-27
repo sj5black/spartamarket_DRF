@@ -453,3 +453,30 @@ SIMPLE_JWT = {
 }
 
 python manage.py migrate
+```
+
+## 페이지네이션 처리
+```
+1. settings.py 에 설정
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10  # 한 페이지에 표시할 항목의 개수
+}
+
+2. API 뷰에 적용
+from rest_framework.pagination import PageNumberPagination
+
+class ArticlePagination(PageNumberPagination):
+    page_size = 10  # 한 페이지에 보여줄 항목 수
+    page_size_query_param = 'page_size'  # 클라이언트가 요청 시 페이지 크기 지정 가능
+    max_page_size = 100  # 최대 페이지 크기
+
+def get(...)
+...
+    paginator = ArticlePagination()
+    result_page = paginator.paginate_queryset(articles, request)
+    serializer = ArticleSerializer(result_page, many=True)
+    # 페이지네이션된 응답 반환
+    return paginator.get_paginated_response(serializer.data)
+
+다음페이지 url 은 paginator가 반환한 json값의 next 참조
