@@ -1,8 +1,25 @@
 
 TIP
+
 ```
 html 에서 ! + TAB 시 html 기본포맷 자동완성
 포맷터 설정 후 Alt+Shift+F 시 자동 포맷팅 (딕셔너리 정렬)
+```
+
+## serializer, request, get_object 개념 정리
+```bash
+1. request.data 는 POSTMAN의 raw형태 json 내용과 완전 동일하다. (클라이언트가 body에 입력하는 값 자체)
+요청이 {"A" : "great", "B" : "normal", "C" : "bad"} 라면,
+request.data["A"]
+request.data.get("A")
+모두 "great" 으로 화면에 출력
+
+2. user = get_object_or_404(CustomUser, username="Teddy") 로 생성된 user의 type은 <class 'accounts.models.CustomUser'> 이다. 즉, 해당 정보를 response로 넘기려면 json 형식으로의 타입 변환이 필요하고, 이를 수행해주는게 serializer이다.
+
+3. 위에서 생성된 user를 serializer.ModelSerializer 를 상속받는 클래스에 담으면 해당 객체의 컬럼정보가 json 형식으로 변환된다.
+serializer = UserSerializer(user)
+return Response(serializer.data)
+serializer.data는 위 request.data 와 동일하게 키값을 통해 밸류값에 접근이 가능하다.
 ```
 
 ```bash

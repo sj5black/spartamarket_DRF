@@ -33,6 +33,15 @@ Response.__init__() got an unexpected keyword argument 'status')
 (원인) Article 모델에 실제로 추가되는 필드는 index가 아닌 User 객체이고, DB에 저장되는 컬럼명은 해당 객체의 id (author_id)를 자동으로 생성하여 저장하는 구조
 (해결) Article 모델에 작성자 정보를 "author" 로 저장해서 해결
 
+6. 댓글 작성자 (author) 에 대한 입력이 없어 발생하는 에러
+ - author 외래키를 read_only 로 설정 후 serializer 저장 시 (author = request.user) 로 같이 선언하여 해결
+ ```py
+ # 이전 코드
+ serializer.save(article=article)
+ # 변경 코드
+ serializer.save(article=article, author=request.user)
+ ```
+
  ## 코드 리뷰
 
 3. 로그아웃 기능 구현 중 예상되는 문제 (토큰 무효화 방법 사용 시)
@@ -40,3 +49,14 @@ Response.__init__() got an unexpected keyword argument 'status')
 (수정) blacklisted token의 DB정보를 refresh 토큰의 유효기간을 고려하여 적절한 주기마다 지속적으로 초기화
 
 5. 포스트맨에서 POST 등 요청 시에 자동으로 역슬래시 붙히는 기능이 있어서 url 이랑 postman 경로 설정에 역슬래시 모두 삭제 필요
+6. 로그아웃 DELETE 요청시에는 또 슬래시를 빼니깐 405 에러 발생...
+
+7. 로그아웃에서
+```py
+response.delete_cookie("access")
+response.delete_cookie("refresh")
+```
+
+처리를 해줘도 재로그인 시 Auth설정을 No Auth로 하면 401 에러가 발생한다.
+결국 현재는 해당 ID에 맞는 유효한 access 토큰이 있어야 로그인이 가능하고, 로그인이 완료되어야 새로운 토큰이 발급된다. 즉, 로그인을 다시하면 사용 가능한 access 토큰이 2개가 되지만, 쿠키에서는 이전에 발금된 토큰이 삭제되어 유효기간이 지나면 자동으로 expire되는 구조이다.  
+결국 보안을 위해서는 로그아웃 시 해당 유저의 토큰을 blacklist에 등록하여 expire 시키고, 로그인 시에 access 토큰이 없어도 id 와 비밀번호만으로 로그인이 가능한 방법을 고민해서 개선해야 한다.

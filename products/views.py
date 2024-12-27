@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Article, Comment
-from .serializers import ArticleSerializer, ArticleDetailSerializer, CommentSerializer
+from .models import *
+from .serializers import *
 
 
 class ArticleListAPIView(APIView):
@@ -28,7 +28,7 @@ class ArticleListAPIView(APIView):
 
 
 class ArticleDetailAPIView(APIView):
-    # 목록 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
+    # 상세 조회의 경우, 비로그인 상태에서도 가능하도록 get_permissions() 오버라이딩
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -78,7 +78,8 @@ class CommentListAPIView(APIView):
         article = get_object_or_404(Article, pk=article_pk)
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(article=article)
+            serializer.save(article=article, author=request.user)
+            # serializer.save(article=article)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

@@ -14,7 +14,7 @@ from django.contrib.auth import authenticate
 from django.shortcuts import render, get_object_or_404
 
 
-class RegisterAPIView(APIView):
+class SignInOutAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -43,10 +43,43 @@ class RegisterAPIView(APIView):
             return res
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request):
+        # 요청으로부터 아이디와 비밀번호를 받음
+        input_username = request.data.get("username")
+        input_password = request.data.get("password")
+
+        # 입력값 검증
+        if not input_username or not input_password:
+            return Response(
+                {"detail": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 삭제 대상 유저 가져오기
+        user = get_object_or_404(CustomUser, username=input_username)
+
+        # 현재 로그인한 사용자와 삭제 대상 사용자 정보 비교
+        if request.user != user:
+            return Response(
+                {"detail": "You can only delete your own account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # 아이디와 비밀번호 인증
+        authenticated_user = authenticate(username=input_username, password=input_password)
+        if authenticated_user is None or authenticated_user != user:
+            return Response(
+                {"detail": "Invalid username or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # 인증 완료 시 회원탈퇴 처리
+        user.delete()
+        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 # access token 정보 필요
 class ProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
@@ -136,7 +169,6 @@ class AuthAPIView(APIView):
 
     # 로그아웃
     def delete(self, request):
-        
         username=request.data.get("username")
         
         # 쿠키에 저장된 토큰 삭제 => 로그아웃 처리
@@ -146,3 +178,44 @@ class AuthAPIView(APIView):
         response.delete_cookie("access")
         response.delete_cookie("refresh")
         return response
+
+
+class PasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = get_object_or_404(CustomUser, username=request.data["username"])
+        serializer = UserSerializer(user)
+        
+        # 입력받은 비밀번호는 해싱된 값이 아니므로, check_password() 메서드로 검증
+        if not user.check_password(request.data["present_password"]):
+            return Response(
+                {"detail": "현재 비밀번호가 일치하지 않습니다."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 새 비밀번호와 확인 비밀번호가 일치하는지 확인
+        if request.data["new_password"] != request.data["confirm_password"]:
+            return Response(
+                {"detail": "새 비밀번호가 일치하지 않습니다."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 비밀번호 유효성 검사
+        value = request.data["new_password"]
+        if len(value) < 8:
+            raise serializers.ValidationError("비밀번호는 최소 8자 이상이어야 합니다.")
+        if not re.search(r"[A-Z]", value):  # 대문자 포함
+            raise serializers.ValidationError("비밀번호는 최소한 하나의 대문자를 포함해야 합니다.")
+        if not re.search(r"[a-z]", value):  # 소문자 포함
+            raise serializers.ValidationError("비밀번호는 최소한 하나의 소문자를 포함해야 합니다.")
+        if not re.search(r"[0-9]", value):  # 숫자 포함
+            raise serializers.ValidationError("비밀번호는 최소한 하나의 숫자를 포함해야 합니다.")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):  # 특수문자 포함
+            raise serializers.ValidationError("비밀번호는 최소한 하나의 특수문자를 포함해야 합니다.")
+        
+        # set_password() 메서드로 비밀번호 해싱
+        user.set_password(value)
+        user.save()
+        return Response({"detail": "비밀번호가 성공적으로 변경되었습니다."}, status=status.HTTP_200_OK)
+        
