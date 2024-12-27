@@ -130,7 +130,10 @@ SIMPLE_JWT = {
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+# TIME_ZONE = "UTC"
+
+# 한국으로 설정
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 

@@ -49,25 +49,25 @@ class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
 
     def get(self, request, username):
-        try:
-            # username을 기반으로 사용자 조회
-            user = CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
-            # 해당 username을 가진 사용자가 없으면 404 반환
-            return Response(
-                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        # 본인의 프로필만 조회하려고 할 때 사용
-        # if request.user != user:
-        #     return Response(
-        #         {"detail": "You do not have permission to view this profile."},
-        #         status=status.HTTP_403_FORBIDDEN,
-        #     )
-
-        # 유저 정보를 시리얼라이저로 직렬화하여 반환
+        user = get_object_or_404(CustomUser, username=username)
+            
         serializer = UserSerializer(user)
         return Response(serializer.data)
+    
+    def put(self, request, username):
+        user = get_object_or_404(CustomUser, username=username)
+        
+        if request.user != user:
+            return Response(
+                {"detail": "You can only edit your own profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        serializer = ProfileEditSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AuthAPIView(APIView):

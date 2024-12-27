@@ -44,6 +44,8 @@ class ArticleDetailAPIView(APIView):
 
     def put(self, request, pk):
         article = self.get_object(pk)
+        if article.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = ArticleDetailSerializer(article, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -51,6 +53,8 @@ class ArticleDetailAPIView(APIView):
 
     def delete(self, request, pk):
         article = self.get_object(pk)
+        if article.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
