@@ -1,6 +1,14 @@
 from django.conf import settings
 from django.db import models
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # 카테고리 이름 (유일해야 함)
+    created_at = models.DateField(auto_now_add=True)  # 생성날짜 자동 기록
+    
+    def __str__(self):
+        return self.name
+    
+    
 class Article(models.Model):
     title = models.CharField(max_length=120)
     content = models.TextField()
@@ -9,6 +17,11 @@ class Article(models.Model):
     image = models.ImageField(upload_to='images/')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     author_nickname = models.CharField(max_length=30, null=False, blank=False, default='Anonymous')
+    categories = models.ManyToManyField(Category, blank=True)
+    
+    def __str__(self):
+        return self.title
+    
     
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
@@ -17,3 +30,8 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     author_nickname = models.CharField(max_length=30, null=False, blank=False, default='Anonymous')
+    
+    def __str__(self):
+        return self.content
+    
+    

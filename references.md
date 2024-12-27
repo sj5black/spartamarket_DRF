@@ -480,3 +480,11 @@ def get(...)
     return paginator.get_paginated_response(serializer.data)
 
 다음페이지 url 은 paginator가 반환한 json값의 next 참조
+```
+
+**모델 생성 시 def __str__(self) 를 선언하는 이유**
+```
+__str__을 정의하지 않으면?
+모델 객체는 __str__ 메서드를 정의하지 않을 경우 기본적으로 __repr__ 메서드가 호출되며, 이는 <Category: Category object (ID)>와 같은 형식으로 출력됩니다.
+이 경우, 가독성이 떨어지고, 객체를 식별하는 데 불편함이 생길 수 있습니다.
+```

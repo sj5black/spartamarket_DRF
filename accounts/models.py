@@ -32,14 +32,14 @@ class UserManager(BaseUserManager):
 
 # AbstractBaseUser를 상속해서 유저 커스텀
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    
-    username = models.CharField(max_length=30, unique=True, null=False, blank=False)
-    email = models.EmailField(max_length=30, unique=True, null=False, blank=False)
-    first_name = models.CharField(max_length=30, null=False, blank=False)
-    last_name = models.CharField(max_length=30, null=False, blank=False)
-    nickname = models.CharField(max_length=30, null=False, blank=False)
-    birth_date = models.DateField(null=False, blank=False)
-    
+        
+    username = models.CharField(max_length=30, unique=True, null=False, blank=False, default='Anonymous')
+    email = models.EmailField(max_length=30, unique=True, null=False, blank=False, default='test@gmail.com')
+    first_name = models.CharField(max_length=30, null=False, blank=False, default='first')
+    last_name = models.CharField(max_length=30, null=False, blank=False, default='last')
+    nickname = models.CharField(max_length=30, null=False, blank=False, default='nick')
+    birth_date = models.DateField(null=False, blank=False, default='2000-01-01')
+        
     # 선택 입력
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], blank=True, null=True)
     intro = models.TextField(blank=True, null=True)

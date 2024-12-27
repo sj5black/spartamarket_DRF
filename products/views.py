@@ -8,8 +8,8 @@ from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
 from django.db.models import Q
-
-
+    
+    
 # 검색 기능(제목, 내용, 작성자 닉네임)
 class ArticleSearchAPIView(APIView):
     def get(self, request):

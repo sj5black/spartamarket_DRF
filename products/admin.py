@@ -1,3 +1,17 @@
 from django.contrib import admin
+from .models import *
 
-# Register your models here.
+admin.site.register(Comment)
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "author_nickname", "created_at")  # Admin에서 보여줄 필드
+    search_fields = ("title", "author_nickname")  # 검색 가능
+    ordering = ("-created_at",)  # 정렬
+    filter_horizontal = ("categories",)
+    
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "created_at")  # Admin에서 보여줄 필드
+    search_fields = ("name",)  # 검색 가능
+    ordering = ("-created_at",)  # 정렬
