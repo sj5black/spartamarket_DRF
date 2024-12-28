@@ -156,12 +156,15 @@ class CommentListAPIView(APIView):
 
 class CommentDetailAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def get_object(self, comment_pk):
         return get_object_or_404(Comment, pk=comment_pk)
 
     def put(self, request, comment_pk):
         comment = self.get_object(comment_pk)
+        if comment.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         serializer = CommentSerializer(comment, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -169,5 +172,8 @@ class CommentDetailAPIView(APIView):
 
     def delete(self, request, comment_pk):
         comment = self.get_object(comment_pk)
+        if comment.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
