@@ -8,7 +8,25 @@ from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
 from django.db.models import Q
-    
+
+
+class ArticleLikeAPIView(APIView):
+    def post(self, request, article_pk):
+        article = get_object_or_404(Article, id=article_pk)
+        user = request.user
+
+        if user in article.like_users.all():
+            article.like_users.remove(user)
+            if article.likes_count > 0: # 좋아요 음수입력 방지
+                article.likes_count -= 1
+                article.save()
+            return Response({'message': '좋아요 취소'}, status=status.HTTP_200_OK)
+        else:
+            article.like_users.add(user)
+            article.likes_count += 1
+            article.save()
+            return Response({'message': '좋아요'}, status=status.HTTP_200_OK)
+
     
 # 검색 기능(제목, 내용, 작성자 닉네임)
 class ArticleSearchAPIView(APIView):
@@ -16,9 +34,6 @@ class ArticleSearchAPIView(APIView):
         # 검색어 가져오기
         search_query = request.query_params.get('q', None)
 
-        print("\n\n")
-        print(search_query)
-        print("\n\n")
         # 검색어가 있을 경우 필터링
         if search_query:
             articles = Article.objects.filter(
@@ -50,7 +65,14 @@ class ArticleListAPIView(APIView):
         return [IsAuthenticated()]
     
     def get(self, request):
+        # 필터링 쿼리 처리
+        sort_by = request.GET.get('sort', 'latest')  # 정렬 기준 (default: 최신순)
         articles = Article.objects.all()
+
+        if sort_by == 'latest':
+            articles = articles.order_by('-created_at')
+        elif sort_by == 'likes':
+            articles = articles.order_by('-likes_count')
         
         # 페이지네이션 적용
         paginator = ArticlePagination()

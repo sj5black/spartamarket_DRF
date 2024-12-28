@@ -18,6 +18,8 @@ class Article(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     author_nickname = models.CharField(max_length=30, null=False, blank=False, default='Anonymous')
     categories = models.ManyToManyField(Category, blank=True)
+    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL , related_name="like_articles", blank=True)
+    likes_count = models.PositiveIntegerField(default=0)
     
     def __str__(self):
         return self.title

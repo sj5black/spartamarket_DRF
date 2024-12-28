@@ -223,21 +223,19 @@ class PasswordAPIView(APIView):
 class FollowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, username):
-        if request.user.username == username:
+    def post(self, request, profile_username):
+        
+        if request.user.username == profile_username:
             return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # 팔로우하려는 유저
-        user_to_follow = get_object_or_404(CustomUser, username=username)
-        request.user.follow(user_to_follow)
-        return Response({"detail": f"You are now following {username}"}, status=status.HTTP_200_OK)
-
-
-class UnfollowAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, username):
-        # 팔로우 취소하려는 유저
-        user_to_unfollow = get_object_or_404(CustomUser, username=username)
-        request.user.unfollow(user_to_unfollow)
-        return Response({"detail": f"You have unfollowed {username}"}, status=status.HTTP_200_OK)
+        profile_user = get_object_or_404(CustomUser, username=profile_username)
+        
+        if not request.user.is_following(profile_user):
+            request.user.follow(profile_user)
+            return Response({"detail": f"You are now following {profile_username}"}, status=status.HTTP_200_OK)
+        elif request.user.is_following(profile_user):
+            request.user.unfollow(profile_user)
+            return Response({"detail": f"You have unfollowed {profile_username}"}, status=status.HTTP_200_OK)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
