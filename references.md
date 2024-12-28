@@ -488,3 +488,38 @@ __str__을 정의하지 않으면?
 모델 객체는 __str__ 메서드를 정의하지 않을 경우 기본적으로 __repr__ 메서드가 호출되며, 이는 <Category: Category object (ID)>와 같은 형식으로 출력됩니다.
 이 경우, 가독성이 떨어지고, 객체를 식별하는 데 불편함이 생길 수 있습니다.
 ```
+
+**함수형 API 에 serializer를 사용한 예시**
+```py
+@api_view(["GET", "POST"])
+def article_list(request):
+    if request.method == "GET":
+        articles = Article.objects.all()
+        serializer = ArticleSerializer(articles, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = ArticleSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "PUT", "DELETE"])
+def article_detail(request, pk):
+    if request.method == "GET":
+        article = get_object_or_404(Article, pk=pk)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+    elif request.method == "PUT":
+        article = get_object_or_404(Article, pk=pk)
+        serializer = ArticleSerializer(article, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+
+    elif request.method == "DELETE":
+        article = get_object_or_404(Article, pk=pk)
+        article.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
