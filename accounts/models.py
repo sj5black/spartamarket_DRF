@@ -33,10 +33,10 @@ class UserManager(BaseUserManager):
 # AbstractBaseUser를 상속해서 유저 커스텀
 class CustomUser(AbstractBaseUser, PermissionsMixin):
         
-    username = models.CharField(max_length=30, unique=True, null=False, blank=False, default='Anonymous')
-    email = models.EmailField(max_length=30, unique=True, null=False, blank=False, default='test@gmail.com')
-    first_name = models.CharField(max_length=30, null=False, blank=False, default='first')
-    last_name = models.CharField(max_length=30, null=False, blank=False, default='last')
+    username = models.CharField(max_length=150, unique=True, null=False, blank=False, default='Anonymous')
+    email = models.EmailField(max_length=254, unique=True, null=False, blank=False, default='test@gmail.com')
+    first_name = models.CharField(max_length=50, null=False, blank=False, default='first')
+    last_name = models.CharField(max_length=50, null=False, blank=False, default='last')
     nickname = models.CharField(max_length=30, null=False, blank=False, default='nick')
     birth_date = models.DateField(null=False, blank=False, default='2000-01-01')
         

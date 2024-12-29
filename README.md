@@ -277,16 +277,8 @@
   - 댓글 모델에 FK로 연결된 작성자(유저)와 해당 유저의 일치여부 검증 후 삭제
 ---
 
-## **ERD 및 설계 도구**
-
-- **ERD 설계**: draw\.io
-- **디자인 시안**: Figma
-- **API 테스트**: Postman
-
-
-
-
-
+## **ERD**
+![ERD](resources/ERD.png)
 
 ## API 명세
 
